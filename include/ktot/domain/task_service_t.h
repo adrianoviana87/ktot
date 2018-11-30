@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include <optional>
 #include <vector>
 #include <string>
 #include "ktot/domain/task_repository_t.h"
@@ -10,12 +9,19 @@ namespace ktot
   class task_service_t
   {
     public:
-      task_service_t(std::shared_ptr<task_repository_t> repository);
+      task_service_t(task_repository_ptr repository);
 
-      std::string save(task_t& task); 
-      std::vector<task_t> list();
-      std::optional<task_t> get(std::string id);
+      std::string save(task_ptr task); 
+      std::vector<task_ptr> list();
+      task_ptr get(std::string id);
+
+      task_ptr start_by_name(const std::string& task_name);
+      void end_all();
     private:
-      std::shared_ptr<task_repository_t> m_repository;
+      task_ptr find_by_name(const std::string& task_name);
+      task_repository_ptr m_repository;
   };
+
+  using task_service_ptr =
+    std::shared_ptr<task_service_t>;
 }

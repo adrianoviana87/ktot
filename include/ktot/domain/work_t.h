@@ -1,6 +1,8 @@
 #pragma once
 
 #include <chrono>
+#include <optional>
+#include <memory>
 
 namespace ktot
 {
@@ -15,11 +17,13 @@ namespace ktot
       time_point startedAt() const;
       void startedAt(time_point val);
 
-      time_point endedAt() const;
+      std::optional<time_point> endedAt() const;
       void endedAt(time_point val);
   private:
       time_point m_startedAt;
-      time_point m_endedAt;
+      std::optional<time_point> m_endedAt;
   };
+
+  using work_ptr = std::shared_ptr<work_t>;
 }
 

@@ -4,12 +4,15 @@
 #include <optional>
 #include <iomanip>
 #include <fstream>
+#include <filesystem>
 #include "sole.hpp"
 
 using json = nlohmann::json;
 using time_rep = ktot::work_t::time_point::rep;
 using time_point = ktot::work_t::time_point;
 using duration = ktot::work_t::time_point::duration;
+
+namespace fs = std::filesystem;
 
 std::string generate_uuid()
 {
@@ -24,19 +27,26 @@ time_point toTimePoint(time_rep val)
   return t;
 }
 
-void serialize(json& j, ktot::work_t& work)
+void serialize(json& j, ktot::work_t work)
 {
   j["startedAt"] = work.startedAt().time_since_epoch().count();
-  j["endedAt"] = work.endedAt().time_since_epoch().count();
+  if (work.endedAt())
+  {
+    j["endedAt"] = work.endedAt()->time_since_epoch().count();
+  }
+  else
+  {
+    j["endedAt"] = nullptr;
+  }
 }
 
 void deserialize(json&j, ktot::work_t& work)
 {
   work.startedAt(toTimePoint(j["startedAt"].get<time_rep>()));
-  
-  if(!j["endedAt"].empty())
+  if (!j["endedAt"].is_null())
   {
-    work.endedAt(toTimePoint(j["endedAt"].get<time_rep>()));
+    auto endedAt = j["endedAt"].get<time_rep>();
+    work.endedAt(toTimePoint(endedAt));
   }
 }
 
@@ -46,11 +56,11 @@ void deserialize(json& j, ktot::task_t& task)
   task.externalId(j["externalId"].get<std::string>());
   task.name(j["name"].get<std::string>());
   auto jArray = j["works"];
-  std::vector<ktot::work_t> works{};
+  std::vector<ktot::work_ptr> works{};
   for(auto jItem : jArray)
   {
-    ktot::work_t work{};
-    deserialize(jItem, work);
+    auto work = std::make_shared<ktot::work_t>();
+    deserialize(jItem, *work);
     works.push_back(work);
   }
 
@@ -64,10 +74,10 @@ void serialize(json& j, ktot::task_t& task)
   j["externalId"] = task.externalId();
 
   auto jArray = json::array();
-  for(auto work : task.works())
+  for(auto& work : task.works())
   {
     auto jItem = json::object();
-    serialize(jItem, work);
+    serialize(jItem, *work);
     jArray.push_back(jItem);
   }
 
@@ -76,40 +86,65 @@ void serialize(json& j, ktot::task_t& task)
 
 namespace ktot
 {
-  void task_json_repository_t::save(task_t& task)
+  task_json_repository_t::task_json_repository_t(
+    app_settings_ptr settings
+  ) : m_settings(settings)
+  {}
+
+  void task_json_repository_t::save(task_ptr task)
   {
-    if (task.id().empty())
+    if (task->id().empty())
     {
-      task.id(generate_uuid());
+      task->id(generate_uuid());
     }
 
     json j;
-    serialize(j, task);
-    std::ofstream f(task.id() + ".json");
+    serialize(j, *task);
+    std::ofstream f(m_settings->tasks_path + task->id() + ".json");
     f << std::setw(4) << j << std::endl;
   }
 
-  std::vector<task_t> task_json_repository_t::list()
+  std::vector<task_ptr> task_json_repository_t::list()
   {
-    return {
-      { "Task 1" },
-      { "Task 2" }
-    };
-  }
-
-  std::optional<task_t> task_json_repository_t::get(std::string id)
-  {
-    std::ifstream inputFile(id + ".json");
-    if (inputFile)
+    std::vector<task_ptr> tasks{};
+    for (auto path: fs::directory_iterator(m_settings->tasks_path))
     {
-      json j;
-      inputFile >> j;
-      task_t task = {};
-      deserialize(j, task);
-      return task;
+      if (path.is_regular_file())
+      {
+        auto p = path.path();
+        auto task = get_by_path(p);
+        if (task)
+        {
+          tasks.push_back(task);
+        }
+      }
     }
 
-    return std::optional<task_t>(std::nullopt);
+    return tasks;
+  }
+
+  task_ptr task_json_repository_t::get_by_path(fs::path path)
+  {
+    if (path.has_filename() && path.has_extension())
+    {
+      std::ifstream inputFile(path);
+      if (inputFile)
+      {
+        json j;
+        inputFile >> j;
+        auto task = std::make_shared<task_t>();
+        deserialize(j, *task);
+        return task;
+      }
+    }
+
+    return nullptr;
+  }
+
+  task_ptr task_json_repository_t::get(std::string id)
+  {
+    fs::path path = m_settings->tasks_path + id + ".json";
+    return get_by_path(path);
   }
 
 }

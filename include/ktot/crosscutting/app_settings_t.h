@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 namespace ktot
 {
@@ -10,4 +11,6 @@ namespace ktot
         std::string projects_path;
         std::string tasks_path;
     };
+
+    using app_settings_ptr = std::shared_ptr<app_settings_t>;
 }

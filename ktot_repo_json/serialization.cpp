@@ -7,7 +7,7 @@ using json = nlohmann::json;
 
 namespace ktot
 {
-    constexpr auto settings_file_path = "~/.ktot.json";
+    constexpr auto settings_file_path = "/home/adriano/.ktot.json";
     void serialize(const app_settings_t& settings)
     {
         json j;
@@ -19,24 +19,20 @@ namespace ktot
         output_file << std::setw(4) << j;
     }
 
-    app_settings_t deserialize()
+    void deserialize(app_settings_t& settings)
     {
         std::ifstream input_file(settings_file_path);
         if (input_file)
         {
             json j;
             input_file >> j;
-            return
-            {
-                j["projects_path"].get<std::string>(),
-                j["tasks_path"].get<std::string>()
-            };
+            settings.tasks_path = j["tasks_path"].get<std::string>();
+            settings.projects_path = j["projects_path"].get<std::string>();
         }
-
-        return
+        else
         {
-            "./ktot-projects",
-            "./ktot-tasks"
-        };
+            settings.tasks_path = "./ktot-tasks";
+            settings.projects_path = "./ktot-projects";
+        }
     }
 }

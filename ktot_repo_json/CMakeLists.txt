@@ -13,6 +13,7 @@ add_library(
 
 target_link_libraries(
   ktot_repo_json
+  stdc++fs
   ktot_domain
   )
 

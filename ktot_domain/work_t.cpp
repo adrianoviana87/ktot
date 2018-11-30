@@ -22,7 +22,7 @@ namespace ktot
         m_startedAt = val;
     }
 
-    work_t::time_point work_t::endedAt() const
+    std::optional<work_t::time_point> work_t::endedAt() const
     {
         return m_endedAt;
     }
