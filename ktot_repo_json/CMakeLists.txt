@@ -8,6 +8,7 @@ include_directories(PUBLIC ../include PRIVATE ${CMAKE_SOURCE_DIR})
 add_library(
   ktot_repo_json
   task_json_repository_t.cpp
+  serialization.cpp
   )
 
 target_link_libraries(
