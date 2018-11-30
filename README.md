@@ -1,5 +1,5 @@
 # ktot
-Kepp Track of Time
+Keep Track of Time
 
 ## Building
 > Currently tested only on linux.
