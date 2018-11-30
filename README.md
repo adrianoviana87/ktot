@@ -2,6 +2,10 @@
 Kepp Track of Time
 
 ## Building
+> Currently tested only on linux.
+>
+> Requires a c++ 17 compliant compiler
+
 clone this repo into some folder
 
 ```bash
