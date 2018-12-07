@@ -1,6 +1,8 @@
 # ktot
 Keep Track of Time
 
+![screenshot](docs/ktot.gif "")
+
 ## Building
 > Currently tested only on linux.
 >
