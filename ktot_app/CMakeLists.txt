@@ -17,6 +17,8 @@ add_executable(
   ktot
   main.cpp
   ktot_app_t.cpp
+  console_app_t.cpp
+  tui_utils.cpp
   )
 
 target_link_libraries(

@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/ktot",
             "preLaunchTask": "make",
-            "args": [],
+            "args": [
+                "-lc"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

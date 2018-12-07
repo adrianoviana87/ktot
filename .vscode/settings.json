@@ -2,6 +2,8 @@
     "files.associations": {
         "chrono": "cpp",
         "ratio": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "tuple": "cpp",
+        "iomanip": "cpp"
     }
 }
