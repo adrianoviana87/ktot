@@ -35,6 +35,10 @@ make_time(const std::string& str, const std::string& format) {
   std::tm t = {};
   std::stringstream ss(str);
   ss >> std::get_time(&t, format.c_str());
-  return t_clock::from_time_t(std::mktime(&t));
+
+  t.tm_hour -= 1;
+  std::time_t tt = std::mktime(&t);
+
+  return t_clock::from_time_t(tt);
 }
 }  // namespace ktot
