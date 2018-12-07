@@ -26,7 +26,8 @@ void print_task_title(const task_t& task, std::ostream& output) {
 
 void print_task_duration(const work_t& work, std::ostream& output) {
   auto now = std::chrono::system_clock::now();
-  output << "WORKING FOR " << hour_fraction_t{now - work.startedAt()}
+  work.duration();
+  output << "WORKING FOR " << hour_fraction_t{work.duration()}
          << " (fractions of an hour)" << std::endl;
 }
 
@@ -94,6 +95,12 @@ void ktot_app_t::edit_task_ended_at(const task_filter_t& filter,
   }
 
   auto work = *(std::end(works) - 1);
+  if (ended_at < work->startedAt()) {
+    m_output << "end time (" << format_time_t{*ended_at, m_date_format}
+             << ") must be greater or equal than start time." << std::endl;
+    return;
+  }
+
   work->endedAt(ended_at);
   m_task_service->save(task);
   print(*task);
@@ -127,7 +134,11 @@ void ktot_app_t::print(const task_t& task) {
 }
 
 void ktot_app_t::start_task(const task_filter_t& filter) {
-  auto task = m_task_service->start(filter);
+  task_ptr task{};
+  if (filter.current || !filter.external_id.empty() || !filter.name.empty()) {
+    task = m_task_service->start(filter);
+  }
+
   if (task) {
     print(*task);
   } else {
@@ -137,7 +148,18 @@ void ktot_app_t::start_task(const task_filter_t& filter) {
 
 app_settings_ptr ktot_app_t::settings() const { return m_settings; }
 
-void ktot_app_t::end_all_tasks() { m_task_service->terminate_all(); }
+void ktot_app_t::end_all_tasks() {
+  auto terminated = m_task_service->terminate_all();
+  if (terminated.empty()) {
+    m_output << "There are no running tasks." << std::endl;
+    return;
+  }
+
+  m_output << "Stoped tasks:" << std::endl;
+  for (auto& task : terminated) {
+    print(*task);
+  }
+}
 
 void ktot_app_t::print_current_task() {
   auto tasks = m_task_service->list();

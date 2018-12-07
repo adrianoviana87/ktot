@@ -15,7 +15,7 @@ class task_service_t {
   task_ptr get(std::string id);
 
   task_ptr start(const task_filter_t &filter);
-  void terminate_all();
+  std::vector<task_ptr> terminate_all();
   task_ptr find(const task_filter_t &filter);
 
  private:

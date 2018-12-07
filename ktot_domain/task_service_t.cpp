@@ -31,13 +31,17 @@ task_ptr task_service_t::start(const task_filter_t &filter) {
   return found_task;
 }
 
-void task_service_t::terminate_all() {
+std::vector<task_ptr> task_service_t::terminate_all() {
+  std::vector<task_ptr> terminated{};
   auto tasks = list();
   for (auto &task : tasks) {
     if (task->terminate()) {
       save(task);
+      terminated.push_back(task);
     }
   }
+
+  return terminated;
 }
 
 task_ptr task_service_t::find(const task_filter_t &filter) {

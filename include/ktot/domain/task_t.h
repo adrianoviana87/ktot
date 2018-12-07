@@ -32,6 +32,7 @@ class task_t {
   std::chrono::seconds total_works_in_date(work_t::time_point time_point) const;
   std::chrono::seconds total_works_today() const;
   std::vector<work_ptr> incomplete_works() const;
+
  private:
   std::string m_name;
   std::string m_externalId;
